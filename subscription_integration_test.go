@@ -91,4 +91,57 @@ func TestSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+}
+
+func TestSubscriptionModifications(t *testing.T) {
+	customer, err := testGateway.Customer().Create(&Customer{
+		FirstName: "Lionel",
+		LastName:  "Barrow",
+		Company:   "Braintree",
+		Email:     "lionel.barrow@example.com",
+		Phone:     "312.555.1234",
+		Fax:       "614.555.5678",
+		Website:   "http://www.example.com",
+		CreditCard: &CreditCard{
+			Number:         testCreditCards["visa"].Number,
+			ExpirationDate: "05/14",
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(customer)
+
+	g := testGateway.Subscription()
+
+	token := customer.CreditCards.CreditCard[0].Token
+	if token == "" {
+		t.Fatal("invalid payment method token")
+	} else {
+		t.Log(token)
+	}
+
+	// Create with discounts and add ons
+	sub, err := g.Create(&Subscription{
+		PaymentMethodToken: token,
+		PlanId:             "test_plan",
+		Discounts: ModificationGroup{
+			Add: &[]Modification{
+				Modification{
+					InheritedFromId: "test_discount_id",
+					Amount:          40,
+					Quantity:        2,
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	id := sub.Id
+	t.Fatal(id)
 }

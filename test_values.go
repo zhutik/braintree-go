@@ -1,10 +1,5 @@
 package braintree
 
-import (
-	// "log"
-	"os"
-)
-
 var testCreditCards = map[string]CreditCard{
 	"visa":       CreditCard{Number: "4111111111111111"},
 	"mastercard": CreditCard{Number: "5555555555554444"},
@@ -12,10 +7,10 @@ var testCreditCards = map[string]CreditCard{
 }
 
 var testGateway = New(
-	Sandbox,
-	os.Getenv("BRAINTREE_MERCH_ID"),
-	os.Getenv("BRAINTREE_PUB_KEY"),
-	os.Getenv("BRAINTREE_PRIV_KEY"),
+	Development,
+	"integration_merchant_id",
+	"8hghpwn86t9zffyy",
+	"73ea657092c920d72bcd7dc6d09d103a",
 )
 
 // func init() {

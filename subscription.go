@@ -18,7 +18,6 @@ type Subscription struct {
 	BillingPeriodStartDate  string               `xml:"billing-period-start-date,omitempty"`
 	CurrentBillingCycle     string               `xml:"current-billing-cycle,omitempty"`
 	DaysPastDue             string               `xml:"days-past-due,omitempty"`
-	Discounts               []interface{}        `xml:"discounts,omitempty"`
 	FailureCount            string               `xml:"failure-count,omitempty"`
 	FirstBillingDate        string               `xml:"first-billing-date,omitempty"`
 	MerchantAccountId       string               `xml:"merchant-account-id,omitempty"`
@@ -37,7 +36,8 @@ type Subscription struct {
 	TrialPeriod             string               `xml:"trial-period,omitempty"` // bool
 	Transactions            *Transactions        `xml:"transactions,omitempty"`
 	Options                 *SubscriptionOptions `xml:"options,omitempty"`
-	// AddOns                  []interface{} `xml:"add-ons,omitempty"`
+	AddOns                  ModificationGroup    `xml:"add-ons,omitempty"`
+	Discounts               ModificationGroup    `xml:"discounts,omitempty"`
 	// Descriptor              interface{}   `xml:"descriptor,omitempty"`   // struct with name, phone
 }
 
