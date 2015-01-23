@@ -1,21 +1,23 @@
 package braintree
 
 import (
-	"math"
+	"math/big"
 	"math/rand"
 	"strconv"
 	"testing"
 	"time"
 )
 
-func offset() float64 {
-	return math.Ceil(rand.Float64() * 100.0)
+func offset() *big.Rat {
+	return big.NewRat(rand.Int63n(100), 1)
 }
 
 func TestTransactionCreateSubmitForSettlementAndVoid(t *testing.T) {
+	amount := *big.NewRat(0, 1).Add(big.NewRat(130, 1), offset())
+
 	tx, err := testGateway.Transaction().Create(&Transaction{
 		Type:   "sale",
-		Amount: 130.00 + offset(),
+		Amount: amount,
 		CreditCard: &CreditCard{
 			Number:         testCreditCards["visa"].Number,
 			ExpirationDate: "05/14",
@@ -35,18 +37,19 @@ func TestTransactionCreateSubmitForSettlementAndVoid(t *testing.T) {
 	}
 
 	// Submit for settlement
-	tx2, err := testGateway.Transaction().SubmitForSettlement(tx.Id, 10)
+	ten := *big.NewRat(10, 1)
+	tx2, err := testGateway.Transaction().SubmitForSettlement(tx.Id, ten)
 
 	t.Log(tx2)
 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if x := tx2.Status; x != "submitted_for_settlement" {
-		t.Fatal(x)
+	if status := tx2.Status; status != "submitted_for_settlement" {
+		t.Fatal(status)
 	}
-	if x := tx2.Amount; x != 10 {
-		t.Fatal(x)
+	if amount := tx2.Amount; ten.Cmp(&amount) != 0 {
+		t.Fatal(amount)
 	}
 
 	// Void
@@ -64,7 +67,7 @@ func TestTransactionCreateSubmitForSettlementAndVoid(t *testing.T) {
 
 func TestTransactionSearch(t *testing.T) {
 	txg := testGateway.Transaction()
-	createTx := func(amount float64, customerName string) error {
+	createTx := func(amount big.Rat, customerName string) error {
 		_, err := txg.Create(&Transaction{
 			Type:   "sale",
 			Amount: amount,
@@ -82,10 +85,13 @@ func TestTransactionSearch(t *testing.T) {
 	ts := strconv.FormatInt(time.Now().Unix(), 10)
 	name := "Erik-" + ts
 
-	if err := createTx(100.0+offset(), name); err != nil {
+	amountOne := *big.NewRat(0, 1).Add(big.NewRat(100, 1), offset())
+	if err := createTx(amountOne, name); err != nil {
 		t.Fatal(err)
 	}
-	if err := createTx(150.0+offset(), "Lionel-"+ts); err != nil {
+
+	amountTwo := *big.NewRat(0, 1).Add(big.NewRat(150, 1), offset())
+	if err := createTx(amountTwo, "Lionel-"+ts); err != nil {
 		t.Fatal(err)
 	}
 
@@ -111,9 +117,11 @@ func TestTransactionSearch(t *testing.T) {
 
 // This test will fail unless you set up your Braintree sandbox account correctly. See TESTING.md for details.
 func TestTransactionCreateWhenGatewayRejected(t *testing.T) {
+	amount := *big.NewRat(2010, 1)
+
 	_, err := testGateway.Transaction().Create(&Transaction{
 		Type:   "sale",
-		Amount: 2010.00,
+		Amount: amount,
 		CreditCard: &CreditCard{
 			Number:         testCreditCards["visa"].Number,
 			ExpirationDate: "05/14",
@@ -128,9 +136,11 @@ func TestTransactionCreateWhenGatewayRejected(t *testing.T) {
 }
 
 func TestFindTransaction(t *testing.T) {
+	amount := *big.NewRat(0, 1).Add(big.NewRat(110, 1), offset())
+
 	createdTransaction, err := testGateway.Transaction().Create(&Transaction{
 		Type:   "sale",
-		Amount: 110.00 + offset(),
+		Amount: amount,
 		CreditCard: &CreditCard{
 			Number:         testCreditCards["mastercard"].Number,
 			ExpirationDate: "05/14",
@@ -161,9 +171,11 @@ func TestFindNonExistantTransaction(t *testing.T) {
 }
 
 func TestAllTransactionFields(t *testing.T) {
+	amount := *big.NewRat(0, 1).Add(big.NewRat(100, 1), offset())
+
 	tx := &Transaction{
 		Type:    "sale",
-		Amount:  100.00 + offset(),
+		Amount:  amount,
 		OrderId: "my_custom_order",
 		CreditCard: &CreditCard{
 			Number:         testCreditCards["visa"].Number,
@@ -201,7 +213,7 @@ func TestAllTransactionFields(t *testing.T) {
 	if tx2.Type != tx.Type {
 		t.Fail()
 	}
-	if tx2.Amount != tx.Amount {
+	if tx2.Amount.Cmp(&tx.Amount) != 0 {
 		t.Fail()
 	}
 	if tx2.OrderId != tx.OrderId {
@@ -286,10 +298,12 @@ func TestTransactionCreateFromPaymentMethodCode(t *testing.T) {
 		t.Fatal("invalid token")
 	}
 
+	amount := *big.NewRat(0, 1).Add(big.NewRat(120, 1), offset())
+
 	tx, err := testGateway.Transaction().Create(&Transaction{
 		Type:               "sale",
 		CustomerID:         customer.Id,
-		Amount:             120 + offset(),
+		Amount:             amount,
 		PaymentMethodToken: customer.CreditCards.CreditCard[0].Token,
 	})
 
@@ -303,10 +317,11 @@ func TestTransactionCreateFromPaymentMethodCode(t *testing.T) {
 
 func TestSettleTransaction(t *testing.T) {
 	old_environment := testGateway.Environment
+	amount := *big.NewRat(0, 1).Add(big.NewRat(130, 1), offset())
 
 	txn, err := testGateway.Transaction().Create(&Transaction{
 		Type:   "sale",
-		Amount: 130.00 + offset(),
+		Amount: amount,
 		CreditCard: &CreditCard{
 			Number:         testCreditCards["visa"].Number,
 			ExpirationDate: "05/14",

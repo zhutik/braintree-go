@@ -1,12 +1,14 @@
 package braintree
 
+import "math/big"
+
 type Transaction struct {
 	XMLName             string               `xml:"transaction"`
 	Id                  string               `xml:"id,omitempty"`
 	CustomerID          string               `xml:"customer-id,omitempty"`
 	Status              string               `xml:"status,omitempty"`
 	Type                string               `xml:"type,omitempty"`
-	Amount              float64              `xml:"amount"`
+	Amount              big.Rat              `xml:"amount"`
 	OrderId             string               `xml:"order-id,omitempty"`
 	PaymentMethodToken  string               `xml:"payment-method-token,omitempty"`
 	MerchantAccountId   string               `xml:"merchant-account-id,omitempty"`

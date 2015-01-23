@@ -2,6 +2,7 @@ package braintree
 
 import (
 	"encoding/xml"
+	"math/big"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -71,9 +72,11 @@ func TestMerchantAccountTransaction(t *testing.T) {
 		TestMerchantAccountCreate(t)
 	}
 
+	amount := *big.NewRat(0, 1).Add(big.NewRat(100, 1), offset())
+
 	tx, err := testGateway.Transaction().Create(&Transaction{
 		Type:   "sale",
-		Amount: 100.00 + offset(),
+		Amount: amount,
 		CreditCard: &CreditCard{
 			Number:         testCreditCards["visa"].Number,
 			ExpirationDate: "05/14",

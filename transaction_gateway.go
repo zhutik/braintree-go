@@ -3,6 +3,7 @@ package braintree
 import (
 	"encoding/xml"
 	"fmt"
+	"math/big"
 )
 
 type TransactionGateway struct {
@@ -24,7 +25,7 @@ func (g *TransactionGateway) Create(tx *Transaction) (*Transaction, error) {
 
 // SubmitForSettlement submits the transaction with the specified id for settlement.
 // If the amount is omitted, the full amount is settled.
-func (g *TransactionGateway) SubmitForSettlement(id string, amount ...float64) (*Transaction, error) {
+func (g *TransactionGateway) SubmitForSettlement(id string, amount ...big.Rat) (*Transaction, error) {
 	var tx *Transaction
 	if len(amount) > 0 {
 		tx = &Transaction{
